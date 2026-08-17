@@ -1,4 +1,5 @@
 ---
+title: "06 - Session、分支、恢复与上下文压缩"
 tags:
   - Agent/Coding-Agent
   - 源码分析/Tau
@@ -6,6 +7,8 @@ aliases:
   - Tau Session Tree
   - Tau 上下文压缩
 source_type: source-analysis
+source_repo: "https://github.com/huggingface/tau"
+source_commit: "20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e"
 status: complete
 ---
 
@@ -29,7 +32,7 @@ SessionState.from_entries()
 
 ## Entry 模型
 
-[`entries.py`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/session/entries.py) 中所有 entry 都有：
+[`entries.py`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/session/entries.py) 中所有 entry 都有：
 
 ```text
 id: unique entry id
@@ -55,7 +58,7 @@ type: discriminant
 
 ## JSONL 存储
 
-[`JsonlSessionStorage`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/session/storage.py#L24-L42)：
+[`JsonlSessionStorage`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/session/storage.py#L24-L42)：
 
 - append 前自动创建父目录；
 - `open("a", encoding="utf-8")` 追加一行；
@@ -72,7 +75,7 @@ type: discriminant
 
 ## 持久化迁移边界
 
-[`jsonl.py#L45-L109`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/session/jsonl.py#L45-L109) 会在反序列化时迁移旧 Tau-v1 message：
+[`jsonl.py#L45-L109`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/session/jsonl.py#L45-L109) 会在反序列化时迁移旧 Tau-v1 message：
 
 - 旧 custom user role → canonical `custom`；
 - assistant string content/tool_calls → ordered blocks；
@@ -88,7 +91,7 @@ type: discriminant
 
 ## 从 Entry 构造当前状态
 
-[`SessionState.from_entries()`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/session/memory.py#L36-L103) 有两种模式：
+[`SessionState.from_entries()`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/session/memory.py#L36-L103) 有两种模式：
 
 - 不给 leaf：按 storage order 线性 replay；
 - 给 leaf id：先 `path_to_entry()` 得到 root-to-leaf，再 replay。
@@ -103,7 +106,7 @@ Replay 规则：
 
 ## Session tree 的合法性
 
-[`tree.py`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/session/tree.py) 检查：
+[`tree.py`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/session/tree.py) 检查：
 
 - entry id 不可重复；
 - leaf 必须存在；
@@ -153,7 +156,7 @@ graph TD
 - `replaces_entry_ids`；
 - 自身 id/parent/timestamp。
 
-[`_apply_compaction()`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/session/memory.py#L106-L129) 重建 active messages 时：
+[`_apply_compaction()`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/session/memory.py#L106-L129) 重建 active messages 时：
 
 1. 遍历 message rows；
 2. 未被替换者保留；
@@ -207,4 +210,3 @@ Tau 可在会话初期另起 provider 请求生成简短标题。源码中特别
 - 上一章：[[05 - 工具系统、系统提示词与上下文资源]]
 - 下一章：[[07 - Extensions、CLI、TUI 与前端边界]]
 - 总览：[[Tau Coding Agent 源码分析 MOC]]
-

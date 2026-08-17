@@ -1,4 +1,5 @@
 ---
+title: "03 - Agent Harness、Agent Loop 与事件模型"
 tags:
   - Agent/Coding-Agent
   - 源码分析/Tau
@@ -6,6 +7,8 @@ aliases:
   - Tau Agent Loop
   - Tau AgentHarness
 source_type: source-analysis
+source_repo: "https://github.com/huggingface/tau"
+source_commit: "20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e"
 status: complete
 ---
 
@@ -27,7 +30,7 @@ Tau 的 Agent 核心可以压缩成：
 
 ## `AgentHarness`：有状态的可复用脑
 
-[`harness.py#L38-L77`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/harness.py#L38-L77) 中的状态包括：
+[`harness.py#L38-L77`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/harness.py#L38-L77) 中的状态包括：
 
 | 状态 | 用途 |
 |---|---|
@@ -53,7 +56,7 @@ Tau 的 Agent 核心可以压缩成：
 
 工具调用可能已经由 assistant 发出，但用户在工具结果返回前取消。如果下一次把“无 tool result 的 tool call”交回 provider，许多 API 会拒绝这段历史。
 
-[`_append_interrupted_tool_results()`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/harness.py#L239-L259) 会扫描未配对 call，并补：
+[`_append_interrupted_tool_results()`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/harness.py#L239-L259) 会扫描未配对 call，并补：
 
 ```text
 Tool call interrupted by user
@@ -64,7 +67,7 @@ is_error = true
 
 ## `run_agent_loop()` 的真实控制流
 
-[`loop.py#L45-L175`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/loop.py#L45-L175)：
+[`loop.py#L45-L175`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/loop.py#L45-L175)：
 
 ```mermaid
 flowchart TD
@@ -110,7 +113,7 @@ Provider adapter 输出更细的 assistant message 组装事件：
 
 ### Agent events
 
-[`events.py`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/events.py) 定义：
+[`events.py`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/events.py) 定义：
 
 | 事件 | 语义 |
 |---|---|
@@ -159,7 +162,7 @@ Harness 的 token 只是布尔标记：
 
 ## 当前并发局限
 
-`AgentTool.execution_mode` 类型支持 `"sequential" | "parallel"`，默认值甚至是 `parallel`；但 [`loop.py#L146-L164`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/loop.py#L146-L164) 仍是：
+`AgentTool.execution_mode` 类型支持 `"sequential" | "parallel"`，默认值甚至是 `parallel`；但 [`loop.py#L146-L164`](https://github.com/huggingface/tau/blob/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e/src/tau_agent/loop.py#L146-L164) 仍是：
 
 ```python
 for call in calls:
@@ -191,4 +194,3 @@ TUI、OAuth、branch、extension 都可后加。
 - 上一章：[[02 - 三层架构、依赖方向与启动链路]]
 - 下一章：[[04 - Provider 适配、消息协议与流式处理]]
 - 总览：[[Tau Coding Agent 源码分析 MOC]]
-
