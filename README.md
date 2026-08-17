@@ -1,14 +1,25 @@
+---
+title: "Tau Coding Agent 源码分析"
+tags:
+  - source-analysis
+  - Agent/Coding-Agent
+source_repo: "https://github.com/huggingface/tau"
+source_commit: "20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e"
+status: complete
+---
+
 # Tau Coding Agent 源码分析
 
 这是一套面向源码阅读与 Agent 架构学习的中文分析笔记，研究对象为
 [huggingface/tau](https://github.com/huggingface/tau)。
 
-分析基线：
+分析基线（2026-08-17 重新采集）：
 
-- Tau `v0.3.10`
-- commit [`15f77f77`](https://github.com/huggingface/tau/tree/15f77f77acfb20608c3a86638aabf59bd614755d)
+- Tau `v0.3.10-7-g20aafad`
+- commit [`20aafadc`](https://github.com/huggingface/tau/tree/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e)
 - Python `>=3.12`
-- 本地测试：`1513 passed, 2 skipped`
+- 本地测试：`1520 passed, 2 skipped`
+- 本地静态校验：Ruff lint、Ruff format、mypy 全部通过
 
 ## 阅读入口
 
@@ -31,6 +42,7 @@
 - Session 使用 append-only JSONL、`parent_id` 分支树和状态投影。
 - 当前 `AgentTool.execution_mode` 虽然声明了并行模式，核心 loop 仍按顺序执行工具。
 - Project trust 是项目输入加载保护，不是文件、进程或网络沙箱。
+- `20aafad` 新增的跨 assistant response `edit/write` 分组只属于 TUI 展示投影，不改变消息历史和执行顺序。
 
 ## 阅读方式
 

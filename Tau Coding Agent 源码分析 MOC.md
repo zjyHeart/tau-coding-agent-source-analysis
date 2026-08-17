@@ -1,4 +1,5 @@
 ---
+title: "Tau Coding Agent 源码分析 MOC"
 tags:
   - Agent/Coding-Agent
   - 源码分析/Tau
@@ -6,6 +7,8 @@ aliases:
   - Tau 源码分析
   - Tau Coding Agent MOC
 source_type: source-analysis
+source_repo: "https://github.com/huggingface/tau"
+source_commit: "20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e"
 status: complete
 ---
 
@@ -19,14 +22,14 @@ status: complete
 | 项目 | 本次分析采用的事实 |
 |---|---|
 | 仓库 | [huggingface/tau](https://github.com/huggingface/tau) |
-| 源码快照 | [`15f77f77`](https://github.com/huggingface/tau/tree/15f77f77acfb20608c3a86638aabf59bd614755d)（2026-08-16） |
-| 版本 | `0.3.10` |
+| 源码快照 | [`20aafadc`](https://github.com/huggingface/tau/tree/20aafadc7cb0d86e0ad917a74dc2ad4450a94c9e)（2026-08-17） |
+| Git describe | `v0.3.10-7-g20aafad` |
 | 主语言 | Python，不是 TypeScript |
 | Python 要求 | `>=3.12` |
 | UI | Typer CLI + Textual TUI + Rich/JSON/Transcript 渲染 |
 | License | MIT |
-| GitHub 快照 | 2340 stars、279 forks（2026-08-16 查询；会随时间变化） |
-| 本地验证 | `uv run pytest -q`：1513 passed，2 skipped（Windows/PowerShell 专属用例） |
+| 仓库快照 | 工作树干净；363 个 tracked files；152 个 Python 文件；54 个测试文件 |
+| 本地验证 | pytest：1520 passed、2 skipped；Ruff lint/format 与 mypy 均通过 |
 
 > [!warning] 分析范围
 > 结论以固定 commit 为准。Tau 更新很快，GitHub Roadmap、README 和当前源码可能不同步；例如 issue #1 仍将 Extensions 列为未完成，但 v0.3.10 的源码、文档与发布记录已经包含完整扩展路径。
@@ -61,13 +64,14 @@ flowchart TD
     CS --> S["append-only JSONL session tree"]
 ```
 
-## 五个必须抓住的源码结论
+## 六个必须抓住的源码结论
 
 1. **`AgentHarness` 不是整个 coding agent。** 它只拥有可复用的“脑”：消息、运行状态、取消、steering/follow-up 队列与事件监听。
 2. **`CodingSession` 才是 coding-agent 环境。** 系统提示词、项目资源、扩展、命令、持久化、压缩、模型切换都在应用层编排。
 3. **事件是核心边界。** Provider 先输出 assistant stream events，Loop 再提升为 agent events；TUI 和 print renderer 消费同一套事件，不进入核心反向控制业务。
 4. **Session 是日志加投影，不是可变聊天数组。** JSONL 只追加；`parent_id` 组成树，`LeafEntry` 选活动分支，`SessionState.from_entries()` 投影出当前上下文。
 5. **Project trust 不是 sandbox。** 它只决定是否读取项目里的指令、skills、prompts、themes、system prompt 和已显式允许的 extensions；文件、进程、网络与 Bash 权限没有因此被隔离。
+6. **TUI 是 canonical history 的显示投影。** `20aafad` 可把连续、仅含同类 `edit` 或 `write` 的 assistant responses 合成一组，但工具调用、结果和持久化边界仍逐条存在。
 
 ## 适合如何学习
 
