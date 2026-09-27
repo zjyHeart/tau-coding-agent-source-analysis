@@ -1,0 +1,5 @@
+.DS_Store
+.diagram-design
+tau-source/
+tau-playground/__pycache__/
+tau-playground/.pytest_cache/

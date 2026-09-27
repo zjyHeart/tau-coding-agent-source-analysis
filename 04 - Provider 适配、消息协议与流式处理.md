@@ -1,4 +1,5 @@
 ---
+title: "04 - Provider 适配、消息协议与流式处理"
 tags:
   - Agent/Coding-Agent
   - 源码分析/Tau
@@ -6,6 +7,8 @@ aliases:
   - Tau Provider 适配
   - Tau 消息协议
 source_type: source-analysis
+source_repo: "https://github.com/huggingface/tau"
+source_commit: "c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3"
 status: complete
 ---
 
@@ -30,7 +33,7 @@ Tau 把差异吸收在 `tau_ai`，让 loop 只理解 canonical messages/events�
 
 ## 核心协议
 
-[`ModelProvider`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/provider.py#L19-L37) 只有一个方法：
+[`ModelProvider`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/provider.py) 只有一个方法：
 
 ```python
 def stream_response(
@@ -43,7 +46,7 @@ def stream_response(
 
 ## Canonical message 模型
 
-[`messages.py`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/messages.py) 使用 Pydantic discriminated union：
+[`messages.py`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/messages.py) 使用 Pydantic discriminated union：
 
 | role | 主要内容 |
 |---|---|
@@ -61,19 +64,20 @@ Assistant 的 `content` 不是“文本字段 + 另一个 tool_calls 数组”�
 
 ### Durable config
 
-`tau_coding/provider_config.py` 和 catalog TOML 描述：
+`tau_coding/provider_config.py` 将用户级 catalog metadata、运行时偏好和凭证合并。`~/.tau/catalog.toml` 主要描述：
 
 - provider kind、base URL、model list/default；
 - API protocol；
 - credential name/env；
-- timeout/retry；
 - context window/max output；
 - thinking levels/parameter mapping；
 - image support、pricing/cache config。
 
+请求 headers、timeout、retry 等运行时偏好放在 `~/.tau/providers.json`；保存的密钥在 credential store，环境变量是另一种来源。v0.4.5 用户可用 `/login custom`、`tau setup` 或手写 catalog 添加 OpenAI 兼容 provider，无需先改源码。官方 [Adding a custom / local provider](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/website/content/guides/providers-and-models.md) 给出了三条路径。
+
 ### Runtime factory
 
-[`create_model_provider()`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_coding/provider_runtime.py#L58-L187) 将配置变为：
+[`create_model_provider()`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/provider_runtime.py) 将配置变为：
 
 - `AnthropicProvider`；
 - `OpenAICodexProvider`；
@@ -84,16 +88,12 @@ Assistant 的 `content` 不是“文本字段 + 另一个 tool_calls 数组”�
 
 ## 双阶段流式转换
 
-```mermaid
-flowchart LR
-    Raw["HTTP SSE / provider chunks"] --> Parse["provider-specific parser"]
-    Parse --> PE["ProviderTextDelta / ThinkingDelta / ToolCall / End / Error"]
-    PE --> Stream["tau_ai.stream"]
-    Stream --> AE["AssistantStart / TextStart-Delta-End / ToolCallStart-End / Done"]
-    AE --> Loop["tau_agent._assistant_events"]
-    Loop --> GE["MessageStart / MessageUpdate / MessageEnd"]
-    GE --> Frontend["CodingSession / renderer / TUI"]
-```
+![Tau Provider 事件转换管线](diagrams/tau-provider-event-pipeline.svg)
+
+[在浏览器中打开完整 HTML](diagrams/tau-provider-event-pipeline.html)
+
+> [!note] 图表说明
+> 使用 `diagram-design` 默认风格重新绘制；橙色节点标记跨 Provider 的 canonical 转换层。
 
 ### 为什么需要 block start/delta/end
 
@@ -120,7 +120,7 @@ Provider adapters 最终都不得把自己的 wire model 泄漏给 loop。
 - 对失败/取消但空内容的 assistant turn 不做 provider replay；
 - durable history 仍保留诊断信息。
 
-[`_provider_context()`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/loop.py#L178-L194) 体现了“记录历史”和“发给模型的可重放上下文”并非同一个集合。
+[`_provider_context()`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/loop.py) 体现了“记录历史”和“发给模型的可重放上下文”并非同一个集合。
 
 ## 重试与错误传播
 
@@ -138,7 +138,7 @@ Provider adapters 最终都不得把自己的 wire model 泄漏给 loop。
 
 ## OAuth refresh 的竞争处理
 
-[`provider_runtime.py#L271-L296`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_coding/provider_runtime.py#L271-L296) 按 event loop 和 credential name 缓存 `asyncio.Lock`。原因是 refresh token 可能使用后立即轮换；agent loop 与自动命名等任务若同时刷新，同一个旧 token 会被重复消费。
+[`provider_runtime.py`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/provider_runtime.py) 按 event loop 和 credential name 缓存 `asyncio.Lock`。原因是 refresh token 可能使用后立即轮换；agent loop 与自动命名等任务若同时刷新，同一个旧 token 会被重复消费。
 
 锁内重新读取 credential store，确保等待者看到前一个任务写回的新 token。这是从 demo Agent 走向真实产品时很容易漏掉的并发细节。
 
@@ -157,7 +157,7 @@ Tau 的消息协议保留：
 
 ### 只新增兼容模型/网关
 
-优先在 catalog 增 provider/model metadata；若 wire protocol 已兼容，不必改 loop。
+优先用 `/login custom` 或 `tau setup`；需可版本化的自定义目录时再写用户级 `catalog.toml`。若 wire protocol 已兼容，不必改 loop。进程内**动态 provider** 是 extension API 的另一条路径，生命周期归扩展 runtime，不写入持久 catalog；见 `src/tau_coding/extensions/provider_registry.py`。
 
 ### 新增协议
 
@@ -190,4 +190,3 @@ Tau 的消息协议保留：
 - 上一章：[[03 - Agent Harness、Agent Loop 与事件模型]]
 - 下一章：[[05 - 工具系统、系统提示词与上下文资源]]
 - 总览：[[Tau Coding Agent 源码分析 MOC]]
-

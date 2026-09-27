@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Print Mode 启动与执行链</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--paper:#f5f5f5;--ink:#2d3142;--muted:#4f5d75;--accent:#eb6c36}
+    body{font-family:'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:3rem 2rem}
+    .frame{max-width:1280px;width:100%} .diagram{overflow-x:auto}
+    .eyebrow{font-family:'Geist Mono', 'Noto Sans Mono CJK SC', monospace;font-size:.66rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+    h1{font-family:'Instrument Serif',serif;font-size:clamp(1.5rem,2.4vw + .75rem,2rem);font-weight:400;letter-spacing:-.02em;line-height:1.15;margin-bottom:1.5rem}
+    svg{width:100%;min-width:900px;display:block}
+  </style>
+</head>
+<body><main class="frame"><p class="eyebrow">Sequence · Diagram Design</p><h1>Print Mode 启动与执行链</h1><div class="diagram">
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tau-print-startup-sequence-title tau-print-startup-sequence-desc">
+  <title id="tau-print-startup-sequence-title">Print Mode 启动与执行链</title>
+  <desc id="tau-print-startup-sequence-desc">用户请求经过 CLI、Provider Factory、CodingSession 和 Agent Core，最终以持久化事件流返回渲染结果。</desc>
+  <defs>
+    <marker id="tau-print-startup-sequence-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#4f5d75"/></marker>
+    <marker id="tau-print-startup-sequence-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#eb6c36"/></marker>
+    <marker id="tau-print-startup-sequence-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#2e5aa8"/></marker>
+    <marker id="tau-print-startup-sequence-arrow-open" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polyline points="0 0,8 3,0 6" fill="none" stroke="#4f5d75" stroke-width="1.2"/></marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#f5f5f5"/>
+  <line x1="120" y1="136" x2="120" y2="632" stroke="rgba(45,49,66,.22)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="380" y1="136" x2="380" y2="632" stroke="rgba(45,49,66,.22)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="640" y1="136" x2="640" y2="632" stroke="rgba(45,49,66,.22)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="900" y1="136" x2="900" y2="632" stroke="rgba(45,49,66,.22)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="1160" y1="136" x2="1160" y2="632" stroke="rgba(45,49,66,.22)" stroke-width="1" stroke-dasharray="4,4"/>
+  <path d="M 128,176 L 372,176" fill="none" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#tau-print-startup-sequence-arrow-link)"/>
+  <rect x="210" y="156" width="80" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="250" y="164" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">tau --print &quot;prompt&quot;</text>
+  <path d="M 388,224 L 632,224" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-print-startup-sequence-arrow)"/>
+  <rect x="478" y="204" width="64" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="510" y="212" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">ProviderConfig</text>
+  <path d="M 632,272 L 388,272" fill="none" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#tau-print-startup-sequence-arrow)"/>
+  <rect x="470" y="252" width="80" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="510" y="260" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">concrete provider</text>
+  <path d="M 388,320 L 892,320" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-print-startup-sequence-arrow)"/>
+  <rect x="592" y="300" width="96" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="640" y="308" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">load / create session</text>
+  <path d="M 908,368 L 1152,368" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-print-startup-sequence-arrow)"/>
+  <rect x="982" y="348" width="96" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="1030" y="356" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">construct Harness + Loop</text>
+  <path d="M 908,416 L 1152,416" fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#tau-print-startup-sequence-arrow-accent)"/>
+  <rect x="974" y="396" width="112" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="1030" y="404" fill="#eb6c36" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">prompt + tools + messages</text>
+  <path d="M 1168,456 H 1216 Q 1224,456 1224,464 V 488 Q 1224,496 1216,496 H 1168" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-print-startup-sequence-arrow)"/>
+  <rect x="1136" y="440" width="112" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="1192" y="448" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">MODEL ↔ TOOLS</text>
+  <path d="M 1152,528 L 908,528" fill="none" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#tau-print-startup-sequence-arrow)"/>
+  <rect x="990" y="508" width="80" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="1030" y="516" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">AgentEvent stream</text>
+  <path d="M 892,576 L 388,576" fill="none" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#tau-print-startup-sequence-arrow)"/>
+  <rect x="608" y="556" width="64" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="640" y="564" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">persisted events</text>
+  <path d="M 372,624 L 128,624" fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#tau-print-startup-sequence-arrow-accent)"/>
+  <rect x="202" y="604" width="96" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="250" y="612" fill="#eb6c36" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".06em">text / JSON / transcript</text>
+  <rect x="40" y="80" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="40" y="80" width="160" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="48" y="88" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="68" y="97" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">ACT</text>
+  <text x="120" y="112" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="120" dy="0">User</tspan></text>
+  <text x="120" y="124" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">terminal</text>
+  <rect x="300" y="80" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="300" y="80" width="160" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="308" y="88" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="328" y="97" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">ACT</text>
+  <text x="380" y="112" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="380" dy="0">CLI / Print Host</tspan></text>
+  <text x="380" y="124" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">main + render mode</text>
+  <rect x="560" y="80" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="560" y="80" width="160" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="568" y="88" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="588" y="97" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">ACT</text>
+  <text x="640" y="112" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="640" dy="0">Provider Factory</tspan></text>
+  <text x="640" y="124" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">runtime adapter</text>
+  <rect x="820" y="80" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="820" y="80" width="160" height="56" rx="6" fill="rgba(235,108,54,.08)" stroke="#eb6c36" stroke-width="1"/>
+  <rect x="828" y="88" width="40" height="12" rx="2" fill="transparent" stroke="#eb6c36" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="848" y="97" fill="#eb6c36" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">ACT</text>
+  <text x="900" y="112" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="900" dy="0">CodingSession</tspan></text>
+  <text x="900" y="124" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">resources + persistence</text>
+  <rect x="1080" y="80" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="1080" y="80" width="160" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="1088" y="88" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="1108" y="97" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">ACT</text>
+  <text x="1160" y="112" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="1160" dy="0">Agent Core</tspan></text>
+  <text x="1160" y="124" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">Harness + Loop</text>
+  <line x1="40" y1="660" x2="1240" y2="660" stroke="rgba(45,49,66,.12)" stroke-width=".8"/>
+  <text x="40" y="680" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" letter-spacing=".18em">LEGEND</text>
+  <rect x="140" y="672" width="16" height="12" rx="2" fill="#ffffff" stroke="#2d3142"/>
+  <text x="164" y="682" fill="#4f5d75" font-size="9" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif">同步调用</text>
+  <line x1="272" y1="680" x2="300" y2="680" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4"/>
+  <text x="308" y="682" fill="#4f5d75" font-size="9" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif">返回事件</text>
+  <rect x="404" y="672" width="16" height="12" rx="2" fill="rgba(235,108,54,.08)" stroke="#eb6c36"/>
+  <text x="428" y="682" fill="#4f5d75" font-size="9" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif">关键路径</text>
+</svg></div></main></body></html>

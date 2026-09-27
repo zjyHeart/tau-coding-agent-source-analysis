@@ -1,17 +1,40 @@
+---
+title: "Tau Coding Agent 源码分析"
+tags:
+  - source-analysis
+  - Agent/Coding-Agent
+source_repo: "https://github.com/huggingface/tau"
+source_commit: "c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3"
+status: complete
+---
+
 # Tau Coding Agent 源码分析
 
 这是一套面向源码阅读与 Agent 架构学习的中文分析笔记，研究对象为
 [huggingface/tau](https://github.com/huggingface/tau)。
 
-分析基线：
+分析基线（2026-09-27 核验）：
 
-- Tau `v0.3.10`
-- commit [`15f77f77`](https://github.com/huggingface/tau/tree/15f77f77acfb20608c3a86638aabf59bd614755d)
+- Tau `v0.4.5-2-gc66fb87`（项目版本 `0.4.5`）
+- commit [`c66fb879`](https://github.com/huggingface/tau/tree/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3)
 - Python `>=3.12`
-- 本地测试：`1513 passed, 2 skipped`
+- 本地测试：`TZ=UTC` 时 `2011 passed, 2 skipped`；默认本机时区有一项日期断言失败
+- 本地静态校验：Ruff lint、Ruff format、mypy 全部通过
+
+## 本地跟练准备
+
+本仓库只保存笔记、图和 `tau-playground/` 的示例脚本；Tau 上游源码不重复上传。克隆本仓库后，在仓库根目录执行：
+
+```bash
+rtk git clone https://github.com/huggingface/tau.git tau-source
+rtk git -C tau-source checkout c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3
+```
+
+然后进入 `tau-source/`，运行 `rtk uv sync --dev --locked`，再按[深度学习计划](./Tau%20Coding%20Agent%20深度学习计划.md)跟练。`rtk` 是本地终端代理；没有安装时去掉命令前缀，直接使用 `git` 和 `uv`。固定 commit 的 GitHub 链接也可用于只读源码，无需克隆。
 
 ## 阅读入口
 
+- [Tau Coding Agent 深度学习计划](./Tau%20Coding%20Agent%20深度学习计划.md)：以 [官方 Core concepts](https://twotimespi.dev/concepts/) 为概念主教材，按 00–14 章逐步运行源码、验证测试并复刻小内核；每章的详细任务页位于 `学习模块/`。
 - [源码分析总览 MOC](./Tau%20Coding%20Agent%20源码分析%20MOC.md)
 - [01 - 项目定位、技术栈与源码地图](./01%20-%20项目定位、技术栈与源码地图.md)
 - [02 - 三层架构、依赖方向与启动链路](./02%20-%20三层架构、依赖方向与启动链路.md)
@@ -31,6 +54,8 @@
 - Session 使用 append-only JSONL、`parent_id` 分支树和状态投影。
 - 当前 `AgentTool.execution_mode` 虽然声明了并行模式，核心 loop 仍按顺序执行工具。
 - Project trust 是项目输入加载保护，不是文件、进程或网络沙箱。
+- v0.4.5 支持 `/login custom`、`tau setup`、动态扩展 provider 与本地 llama.cpp 后端；自定义 API 先核对官方配置入口与远端协议。
+- 连续 `edit/write` 的 TUI 展示分组不改变消息历史和执行顺序。
 
 ## 阅读方式
 

@@ -1,4 +1,5 @@
 ---
+title: "07 - Extensions、CLI、TUI 与前端边界"
 tags:
   - Agent/Coding-Agent
   - 源码分析/Tau
@@ -6,6 +7,8 @@ aliases:
   - Tau Extensions
   - Tau TUI
 source_type: source-analysis
+source_repo: "https://github.com/huggingface/tau"
+source_commit: "c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3"
 status: complete
 ---
 
@@ -15,16 +18,12 @@ status: complete
 
 Tau 不为 TUI 写第二套 Agent loop。CLI print mode、Textual TUI、自定义 frontend 都消费同一 `AgentEvent`，差别只是状态投影和交互能力。
 
-```mermaid
-flowchart TD
-    CS["CodingSession"] --> EV["AgentEvent stream"]
-    EV --> TXT["final text renderer"]
-    EV --> JSON["NDJSON renderer"]
-    EV --> TR["transcript renderer"]
-    EV --> AD["TUI adapter"]
-    AD --> ST["TuiState"]
-    ST --> APP["Textual App / widgets / modals"]
-```
+![Tau 多前端事件投影](diagrams/tau-frontend-event-projection.svg)
+
+[在浏览器中打开完整 HTML](diagrams/tau-frontend-event-projection.html)
+
+> [!note] 图表说明
+> 使用 `diagram-design` 默认风格重新绘制；同一 canonical `AgentEvent` 分别投影到 print renderers 与 TUI 状态。
 
 ## CLI：不仅是参数解析
 
@@ -72,8 +71,27 @@ Textual 不直接操纵 Harness 消息数组。Adapter 的职责是：
 - error/cancel → transcript block；
 - restored session → 重新投影已有消息。
 
+[`TuiEventAdapter.apply()`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/tui/adapter.py) 是实时路径的边界：delta 先形成临时显示，`MessageEndEvent` 到达后再用最终 canonical `AssistantMessage` 重建该段，确保 block 顺序与持久化消息一致。恢复路径则由 [`TuiState.load_messages()`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/tui/state.py) 从已有消息重新投影。
+
 > [!note] UI batching 不等于执行并发
 > TUI 可把一组 read/edit/write 显示为紧凑块，但 docs 明确说明 grouping 只影响展示；执行、session history 和 print transcript 仍保留每个 call/result。
+
+## 跨 response 的 edit/write 展示分组
+
+v0.4.5 可把连续 assistant responses 的文件修改调用合并展示，但规则很窄：
+
+1. 当前消息必须只含工具调用，不能夹带 text/thinking；
+2. 这些调用必须全部同名，且只能是 `edit` 或 `write`；
+3. 上一个显示项必须是同类工具，已获得 result，且自己允许 continuation；
+4. 不能跨自定义 tool-call renderer 合并；
+5. `read` 仍只在单个 assistant message 的 batch 内分组。
+
+实时路径在 [`adapter.py`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/tui/adapter.py) 为满足条件的 call 记录 continuation 标记；[`TuiState._can_append_file_mutation_continuation()`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/tui/state.py) 决定是否并入上一显示组。恢复路径用同一个 [`_is_file_mutation_only_message()`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/tui/state.py) 判定，因此 live 与 restored transcript 应一致。
+
+对应回归测试明确覆盖：连续五次 write、连续三次 edit 会合并；插入 assistant text/thinking、换工具类型、失败/未完成结果或自定义 renderer 会阻断合并。展开显示仍可查看每个 call/result（[`tests/test_tui_adapter.py`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/tests/test_tui_adapter.py)）。
+
+> [!important] 架构含义
+> `AssistantMessage → ToolResultMessage → AssistantMessage` 的 canonical 边界没有被折叠；折叠发生在 `ChatItem`/`GroupedToolCall`。因此这是 display projection 的演进，不是 Agent loop、tool scheduler 或 session schema 的改变。
 
 ## `TuiState` 为什么值得单独存在
 
@@ -114,21 +132,14 @@ TUI 只 mount transcript 的一个窗口，滚动到边界再分页。完整 dis
 
 ### 生命周期
 
-```mermaid
-sequenceDiagram
-    participant Host as CodingSession/Host
-    participant Loader as Extension Loader
-    participant Ext as setup(tau)
-    participant RT as ExtensionRuntime
+![Tau Extension 生命周期](diagrams/tau-extension-lifecycle.svg)
 
-    Host->>Loader: discover + load paths
-    Loader->>Ext: import module, call setup(api)
-    Ext->>RT: register_tool/command/hook/provider/ui
-    RT->>Host: bind session and command registry
-    Host->>RT: dispatch lifecycle/input/tool/events
-    Host->>RT: reload/dispose
-    RT->>Ext: cleanup callbacks
-```
+[在浏览器中打开完整 HTML](diagrams/tau-extension-lifecycle.html)
+
+> [!note] 图表说明
+> 使用 `diagram-design` 默认风格重新绘制；橙色调用标记扩展注册的关键路径，虚线表示绑定或清理回调。
+
+`CodingSession.load()` 先加载用户级和显式 extensions，再做 project trust；只有 trusted 且启用 `--project-extensions` 才加载项目扩展。随后 [`ExtensionRuntime.compose_tools()`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/extensions/runtime.py) 合并工具：扩展同名工具在原位置覆盖 built-in，扩展独有工具按注册顺序追加，最后统一包裹 `tool_call/tool_result` hook seam。组装位置见 [`session.py`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/session.py)。
 
 ## Extension 能扩展什么
 
@@ -146,6 +157,8 @@ Extension API 可以注册或参与：
 - TUI component bridge、key interceptor；
 - custom session entries；
 - diagnostics 与 cleanup。
+
+v0.4.5 还引入了 `tau_coding.extensions.provider_registry` 的**动态 provider** 与 `local_backends` 契约。它们是进程内扩展层，不会被复制到用户的 `catalog.toml` 或 `providers.json`；内置 `llama.cpp` 后端通过 `/local` 管理可发现的本地模型。研究自定义模型 API 时，先区分用户级持久 provider（`/login custom`、`tau setup`）与扩展动态 provider。源码入口：[provider registry](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/extensions/provider_registry.py)、[local backends](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_coding/local_backends.py)；同 commit [官方 Providers guide](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/website/content/guides/providers-and-models.md) 分开描述了两条路径。
 
 工具注册后会包装成 core `AgentTool`，hook 通过 Harness 的 before/after seam 接入，避免 core 反向 import extension runtime。
 
@@ -176,9 +189,9 @@ Python extension 是本机代码，不是 declarative plugin：
 - `tests/test_extensions.py` 与 example extension tests 存在；
 - 官网已有 Extensions guide；
 - release notes 已记录 Python extensions；
-- v0.3.10 还将 Hugging Face route controls 移到 public extension API。
+- v0.4.5 已进一步包含动态 provider、本地后端与内置 llama.cpp 扩展。
 
-因此 Roadmap 只能作为演进历史，不能作为 2026-08-16 的功能真值。
+因此 Roadmap 只能作为演进历史，不能作为 2026-09-23 固定快照的功能真值。
 
 ## 自定义 Frontend 的最小方法
 

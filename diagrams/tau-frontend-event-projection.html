@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentEvent 到多前端投影</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--paper:#f5f5f5;--ink:#2d3142;--muted:#4f5d75;--accent:#eb6c36}
+    body{font-family:'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:3rem 2rem}
+    .frame{max-width:1280px;width:100%} .diagram{overflow-x:auto}
+    .eyebrow{font-family:'Geist Mono', 'Noto Sans Mono CJK SC', monospace;font-size:.66rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+    h1{font-family:'Instrument Serif',serif;font-size:clamp(1.5rem,2.4vw + .75rem,2rem);font-weight:400;letter-spacing:-.02em;line-height:1.15;margin-bottom:1.5rem}
+    svg{width:100%;min-width:900px;display:block}
+  </style>
+</head>
+<body><main class="frame"><p class="eyebrow">Architecture · Diagram Design</p><h1>AgentEvent 到多前端投影</h1><div class="diagram">
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tau-frontend-event-projection-title tau-frontend-event-projection-desc">
+  <title id="tau-frontend-event-projection-title">AgentEvent 到多前端投影</title>
+  <desc id="tau-frontend-event-projection-desc">同一 CodingSession 事件流分别投影为文本、NDJSON、Transcript 与 Textual TUI 状态。</desc>
+  <defs>
+    <marker id="tau-frontend-event-projection-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#4f5d75"/></marker>
+    <marker id="tau-frontend-event-projection-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#eb6c36"/></marker>
+    <marker id="tau-frontend-event-projection-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#2e5aa8"/></marker>
+    <marker id="tau-frontend-event-projection-arrow-open" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polyline points="0 0,8 3,0 6" fill="none" stroke="#4f5d75" stroke-width="1.2"/></marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#f5f5f5"/>
+  <rect x="504" y="80" width="224" height="320" rx="8" fill="rgba(45,49,66,.02)" stroke="rgba(45,49,66,.10)" stroke-width=".8"/>
+  <rect x="516" y="84" width="140" height="12" rx="2" fill="#f5f5f5"/>
+  <text x="586" y="92" fill="rgba(45,49,66,.48)" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".14em">PRINT RENDERERS</text>
+  <path d="M 200,296 L 248,296" fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#tau-frontend-event-projection-arrow-accent)"/>
+  <path d="M 424,248 H 448 Q 456,248 456,240 V 148 Q 456,140 464,140 H 536" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-frontend-event-projection-arrow)"/>
+  <path d="M 424,272 H 464 Q 472,272 472,264 V 248 Q 472,240 480,240 H 536" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-frontend-event-projection-arrow)"/>
+  <path d="M 424,296 H 480 Q 488,296 488,304 V 348 Q 488,356 496,356 H 536" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-frontend-event-projection-arrow)"/>
+  <path d="M 424,320 H 488 Q 496,320 496,328 V 488 Q 496,496 504,496" fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#tau-frontend-event-projection-arrow-accent)"/>
+  <path d="M 704,496 L 752,496" fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#tau-frontend-event-projection-arrow-accent)"/>
+  <path d="M 952,496 L 1000,496" fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#tau-frontend-event-projection-arrow-accent)"/>
+  <rect x="40" y="260" width="160" height="72" rx="6" fill="#f5f5f5"/>
+  <rect x="40" y="260" width="160" height="72" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="48" y="268" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="68" y="277" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">SOURCE</text>
+  <text x="120" y="292" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="120" dy="0">CodingSession</tspan></text>
+  <text x="120" y="320" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">canonical AgentEvent</text>
+  <rect x="248" y="224" width="176" height="144" rx="6" fill="#f5f5f5"/>
+  <rect x="248" y="224" width="176" height="144" rx="6" fill="rgba(235,108,54,.08)" stroke="#eb6c36" stroke-width="1"/>
+  <rect x="256" y="232" width="40" height="12" rx="2" fill="transparent" stroke="#eb6c36" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="276" y="241" fill="#eb6c36" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">EVENT</text>
+  <text x="336" y="256" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="336" dy="0">AgentEvent stream</tspan></text>
+  <text x="336" y="356" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">single frontend contract</text>
+  <rect x="536" y="120" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="536" y="120" width="160" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="544" y="128" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="564" y="137" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">TEXT</text>
+  <text x="616" y="152" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="616" dy="0">Final Text</tspan></text>
+  <text x="616" y="164" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">human output</text>
+  <rect x="536" y="220" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="536" y="220" width="160" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="544" y="228" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="564" y="237" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">JSON</text>
+  <text x="616" y="252" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="616" dy="0">NDJSON</tspan></text>
+  <text x="616" y="264" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">automation stream</text>
+  <rect x="536" y="320" width="160" height="56" rx="6" fill="#f5f5f5"/>
+  <rect x="536" y="320" width="160" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="544" y="328" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="564" y="337" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">LOG</text>
+  <text x="616" y="352" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="616" dy="0">Transcript</tspan></text>
+  <text x="616" y="364" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">readable process</text>
+  <rect x="504" y="464" width="200" height="64" rx="6" fill="#f5f5f5"/>
+  <rect x="504" y="464" width="200" height="64" rx="6" fill="rgba(235,108,54,.08)" stroke="#eb6c36" stroke-width="1"/>
+  <rect x="512" y="472" width="40" height="12" rx="2" fill="transparent" stroke="#eb6c36" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="532" y="481" fill="#eb6c36" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">ADAPT</text>
+  <text x="604" y="496" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="604" dy="0">TUI Adapter</tspan></text>
+  <text x="604" y="516" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">events → display state</text>
+  <rect x="752" y="464" width="200" height="64" rx="6" fill="#f5f5f5"/>
+  <rect x="752" y="464" width="200" height="64" rx="6" fill="rgba(45,49,66,.05)" stroke="#4f5d75" stroke-width="1"/>
+  <rect x="760" y="472" width="40" height="12" rx="2" fill="transparent" stroke="#4f5d75" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="780" y="481" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">STATE</text>
+  <text x="852" y="496" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="852" dy="0">TuiState</tspan></text>
+  <text x="852" y="516" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">ChatItem projection</text>
+  <rect x="1000" y="464" width="200" height="64" rx="6" fill="#f5f5f5"/>
+  <rect x="1000" y="464" width="200" height="64" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="1008" y="472" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="1028" y="481" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">VIEW</text>
+  <text x="1100" y="496" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="1100" dy="0">Textual App</tspan></text>
+  <text x="1100" y="516" fill="#4f5d75" font-size="9" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle">widgets · modals · paging</text>
+  <line x1="40" y1="656" x2="1240" y2="656" stroke="rgba(45,49,66,.12)" stroke-width=".8"/>
+  <text x="40" y="676" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" letter-spacing=".18em">LEGEND</text>
+  <rect x="140" y="668" width="16" height="12" rx="2" fill="rgba(235,108,54,.08)" stroke="#eb6c36"/>
+  <text x="164" y="678" fill="#4f5d75" font-size="9" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif">Canonical 事件</text>
+  <rect x="356" y="668" width="16" height="12" rx="2" fill="#ffffff" stroke="#2d3142"/>
+  <text x="380" y="678" fill="#4f5d75" font-size="9" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif">Print 投影</text>
+  <line x1="516" y1="676" x2="544" y2="676" stroke="#2e5aa8" stroke-width="1.2"/>
+  <text x="552" y="678" fill="#4f5d75" font-size="9" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif">TUI 投影</text>
+</svg></div></main></body></html>

@@ -1,4 +1,5 @@
 ---
+title: "03 - Agent Harness、Agent Loop 与事件模型"
 tags:
   - Agent/Coding-Agent
   - 源码分析/Tau
@@ -6,6 +7,8 @@ aliases:
   - Tau Agent Loop
   - Tau AgentHarness
 source_type: source-analysis
+source_repo: "https://github.com/huggingface/tau"
+source_commit: "c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3"
 status: complete
 ---
 
@@ -27,7 +30,7 @@ Tau 的 Agent 核心可以压缩成：
 
 ## `AgentHarness`：有状态的可复用脑
 
-[`harness.py#L38-L77`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/harness.py#L38-L77) 中的状态包括：
+[`harness.py`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/harness.py) 中的状态包括：
 
 | 状态 | 用途 |
 |---|---|
@@ -53,7 +56,7 @@ Tau 的 Agent 核心可以压缩成：
 
 工具调用可能已经由 assistant 发出，但用户在工具结果返回前取消。如果下一次把“无 tool result 的 tool call”交回 provider，许多 API 会拒绝这段历史。
 
-[`_append_interrupted_tool_results()`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/harness.py#L239-L259) 会扫描未配对 call，并补：
+[`_append_interrupted_tool_results()`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/harness.py) 会扫描未配对 call，并补：
 
 ```text
 Tool call interrupted by user
@@ -64,24 +67,14 @@ is_error = true
 
 ## `run_agent_loop()` 的真实控制流
 
-[`loop.py#L45-L175`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/loop.py#L45-L175)：
+[`loop.py`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/loop.py)：
 
-```mermaid
-flowchart TD
-    S["AgentStart + TurnStart"] --> P["写入 prompt / pending steering"]
-    P --> M["provider.stream_response()"]
-    M --> A["组装 AssistantMessage"]
-    A --> X{"error / aborted?"}
-    X -- yes --> End["TurnEnd + AgentEnd"]
-    X -- no --> C{"有 tool_calls?"}
-    C -- yes --> E["按 calls 顺序执行工具"]
-    E --> R["追加 ToolResultMessage"]
-    R --> ST["读取 steering queue"]
-    ST --> M
-    C -- no --> F{"有 follow-up?"}
-    F -- yes --> P
-    F -- no --> End
-```
+![Tau Agent Loop 控制流|697](diagrams/tau-agent-loop-flow.svg)
+
+[在浏览器中打开完整 HTML](diagrams/tau-agent-loop-flow.html)
+
+> [!note] 图表说明
+> 使用 `diagram-design` 默认风格重新绘制；流式响应与消息组装合并为一个模型步骤，工具结果追加与 steering 读取合并为工具执行步骤，循环语义保持不变。
 
 ### 每一轮发生的事
 
@@ -110,7 +103,7 @@ Provider adapter 输出更细的 assistant message 组装事件：
 
 ### Agent events
 
-[`events.py`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/events.py) 定义：
+[`events.py`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/events.py) 定义：
 
 | 事件 | 语义 |
 |---|---|
@@ -159,7 +152,7 @@ Harness 的 token 只是布尔标记：
 
 ## 当前并发局限
 
-`AgentTool.execution_mode` 类型支持 `"sequential" | "parallel"`，默认值甚至是 `parallel`；但 [`loop.py#L146-L164`](https://github.com/huggingface/tau/blob/15f77f77acfb20608c3a86638aabf59bd614755d/src/tau_agent/loop.py#L146-L164) 仍是：
+`AgentTool.execution_mode` 类型支持 `"sequential" | "parallel"`，默认值甚至是 `parallel`；但 [`loop.py`](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/loop.py) 仍是：
 
 ```python
 for call in calls:
@@ -171,6 +164,10 @@ for call in calls:
 
 > [!warning] 不要把类型字段当成已实现调度
 > 这是典型的源码分析陷阱：schema 表达了设计空间，不代表执行器已经消费它。
+
+## v0.4.5 的响应计时
+
+`run_agent_loop()` 把 provider 等待时间记录到最终 `AssistantMessage.timing`：`total_duration_ms` 是总时长；只有观察到输出事件时才填 `time_to_first_output_ms`。它是诊断元数据，不改变消息、工具和事件的控制流。对照 [loop.py](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/loop.py)、[messages.py](https://github.com/huggingface/tau/blob/c66fb879c1058f7b3d8514fb7f92c919d3c3e3b3/src/tau_agent/messages.py) 与 `tests/test_agent_loop.py::test_agent_loop_does_not_invent_ttft_without_an_output_event`。
 
 ## 可迁移的最小实现
 
@@ -191,4 +188,3 @@ TUI、OAuth、branch、extension 都可后加。
 - 上一章：[[02 - 三层架构、依赖方向与启动链路]]
 - 下一章：[[04 - Provider 适配、消息协议与流式处理]]
 - 总览：[[Tau Coding Agent 源码分析 MOC]]
-

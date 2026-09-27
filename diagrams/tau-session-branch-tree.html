@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Append-only Session 分支树</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--paper:#f5f5f5;--ink:#2d3142;--muted:#4f5d75;--accent:#eb6c36}
+    body{font-family:'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:3rem 2rem}
+    .frame{max-width:960px;width:100%} .diagram{overflow-x:auto}
+    .eyebrow{font-family:'Geist Mono', 'Noto Sans Mono CJK SC', monospace;font-size:.66rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+    h1{font-family:'Instrument Serif',serif;font-size:clamp(1.5rem,2.4vw + .75rem,2rem);font-weight:400;letter-spacing:-.02em;line-height:1.15;margin-bottom:1.5rem}
+    svg{width:100%;min-width:760px;display:block}
+  </style>
+</head>
+<body><main class="frame"><p class="eyebrow">Tree · Diagram Design</p><h1>Append-only Session 分支树</h1><div class="diagram">
+<svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tau-session-branch-tree-title tau-session-branch-tree-desc">
+  <title id="tau-session-branch-tree-title">Append-only Session 分支树</title>
+  <desc id="tau-session-branch-tree-desc">会话从 tool result 节点分叉，原分支保留，新 prompt 形成新的活动叶节点。</desc>
+  <defs>
+    <marker id="tau-session-branch-tree-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#4f5d75"/></marker>
+    <marker id="tau-session-branch-tree-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#eb6c36"/></marker>
+    <marker id="tau-session-branch-tree-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#2e5aa8"/></marker>
+    <marker id="tau-session-branch-tree-arrow-open" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polyline points="0 0,8 3,0 6" fill="none" stroke="#4f5d75" stroke-width="1.2"/></marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#f5f5f5"/>
+  <path d="M 480,88 L 480,140" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-session-branch-tree-arrow)"/>
+  <path d="M 480,188 L 480,240" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-session-branch-tree-arrow)"/>
+  <path d="M 480,288 V 320 Q 480,328 472,328 H 288 Q 280,328 280,336 V 360" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#tau-session-branch-tree-arrow)"/>
+  <path d="M 480,288 V 320 Q 480,328 488,328 H 672 Q 680,328 680,336 V 360" fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#tau-session-branch-tree-arrow-accent)"/>
+  <path d="M 680,408 L 680,460" fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#tau-session-branch-tree-arrow-accent)"/>
+  <rect x="400" y="40" width="160" height="48" rx="6" fill="#f5f5f5"/>
+  <rect x="400" y="40" width="160" height="48" rx="6" fill="rgba(79,93,117,.10)" stroke="#7a8399" stroke-width="1"/>
+  <rect x="408" y="48" width="40" height="12" rx="2" fill="transparent" stroke="#7a8399" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="428" y="57" fill="#7a8399" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">ROOT</text>
+  <text x="480" y="72" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="480" dy="0">root: user prompt</tspan></text>
+  <rect x="400" y="140" width="160" height="48" rx="6" fill="#f5f5f5"/>
+  <rect x="400" y="140" width="160" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="408" y="148" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="428" y="157" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">MSG</text>
+  <text x="480" y="172" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="480" dy="0">assistant</tspan></text>
+  <rect x="400" y="240" width="160" height="48" rx="6" fill="#f5f5f5"/>
+  <rect x="400" y="240" width="160" height="48" rx="6" fill="rgba(235,108,54,.08)" stroke="#eb6c36" stroke-width="1"/>
+  <rect x="408" y="248" width="40" height="12" rx="2" fill="transparent" stroke="#eb6c36" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="428" y="257" fill="#eb6c36" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">MSG</text>
+  <text x="480" y="272" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="480" dy="0">tool result</tspan></text>
+  <rect x="200" y="360" width="160" height="48" rx="6" fill="#f5f5f5"/>
+  <rect x="200" y="360" width="160" height="48" rx="6" fill="rgba(45,49,66,.02)" stroke="rgba(45,49,66,.22)" stroke-width="1" stroke-dasharray="4,3"/>
+  <rect x="208" y="368" width="40" height="12" rx="2" fill="transparent" stroke="#7a8399" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="228" y="377" fill="#7a8399" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">LEAF</text>
+  <text x="280" y="392" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="280" dy="0">原分支继续</tspan></text>
+  <rect x="600" y="360" width="160" height="48" rx="6" fill="#f5f5f5"/>
+  <rect x="600" y="360" width="160" height="48" rx="6" fill="rgba(235,108,54,.08)" stroke="#eb6c36" stroke-width="1"/>
+  <rect x="608" y="368" width="40" height="12" rx="2" fill="transparent" stroke="#eb6c36" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="628" y="377" fill="#eb6c36" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">BRANCH</text>
+  <text x="680" y="392" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="680" dy="0">回到 C 后的新 prompt</tspan></text>
+  <rect x="600" y="460" width="160" height="48" rx="6" fill="#f5f5f5"/>
+  <rect x="600" y="460" width="160" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+  <rect x="608" y="468" width="40" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity=".45" stroke-width=".8"/>
+  <text x="628" y="477" fill="#2d3142" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" text-anchor="middle" letter-spacing=".08em">LEAF</text>
+  <text x="680" y="492" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif" text-anchor="middle"><tspan x="680" dy="0">新分支 assistant</tspan></text>
+  <line x1="40" y1="536" x2="920" y2="536" stroke="rgba(45,49,66,.12)" stroke-width=".8"/>
+  <text x="40" y="556" fill="#4f5d75" font-size="8" font-family="'Geist Mono', 'Noto Sans Mono CJK SC', monospace" letter-spacing=".18em">LEGEND</text>
+  <rect x="140" y="548" width="16" height="12" rx="2" fill="rgba(235,108,54,.08)" stroke="#eb6c36"/>
+  <text x="164" y="558" fill="#4f5d75" font-size="9" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif">活动分支</text>
+  <line x1="272" y1="556" x2="300" y2="556" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4"/>
+  <text x="308" y="558" fill="#4f5d75" font-size="9" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif">保留历史</text>
+  <rect x="404" y="548" width="16" height="12" rx="2" fill="#ffffff" stroke="#2d3142"/>
+  <text x="428" y="558" fill="#4f5d75" font-size="9" font-family="'Geist', 'Hiragino Sans', 'Noto Sans CJK SC', sans-serif">消息节点</text>
+</svg></div></main></body></html>
